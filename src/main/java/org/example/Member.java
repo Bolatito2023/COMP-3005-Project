@@ -5,6 +5,7 @@ import java.sql.*;
 import org.mindrot.jbcrypt.BCrypt;
 public class Member {
 
+
     //This will tell if the password entered during log in is verified or not
     private static boolean read = false;
     /**

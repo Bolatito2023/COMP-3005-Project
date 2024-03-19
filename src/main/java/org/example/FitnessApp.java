@@ -8,6 +8,7 @@ import java.sql.Date;
 
 public class FitnessApp {
     private static String username;
+
     private static String password;
     private static int portNumber;
 
