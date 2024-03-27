@@ -1,0 +1,12 @@
+CREATE TABLE equipment (
+	equipment_id SERIAL PRIMARY KEY,
+	name VARCHAR(255) NOT NULL,
+	type VARCHAR(255) NOT NULL,
+	purchase_date DATE NOT NULL,
+	last_maintenance_date DATE,
+	maintenance_frequency VARCHAR(255),
+	status VARCHAR(255)
+)
+
+INSERT INTO equipment(name, type, purchase_date, last_maintenance_date, maintenance_frequency, status)
+VALUES ('Treadmill', 'Cardiovascular', '2024-03-27', '2024-03-28', 'Daily', 'Operational')
