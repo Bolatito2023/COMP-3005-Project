@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ProjectModuleManager">
+    <modules>
+      <module fileurl="file://$PROJECT_DIR$/.idea/COMP-3005-Project-Forewa-s-branch.iml" filepath="$PROJECT_DIR$/.idea/COMP-3005-Project-Forewa-s-branch.iml" />
+      <module fileurl="file://$PROJECT_DIR$/COMP-3005-Project-Forewa-s-branch/projectComp.iml" filepath="$PROJECT_DIR$/COMP-3005-Project-Forewa-s-branch/projectComp.iml" />
+    </modules>
+  </component>
+</project>

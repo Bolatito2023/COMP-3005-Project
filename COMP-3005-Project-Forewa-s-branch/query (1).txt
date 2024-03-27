@@ -1,0 +1,48 @@
+CREATE TYPE CATEGORY AS ENUM ('WATER-BASED', 'STRENGTH', 'CARDIO', 'MINDBODY');
+
+CREATE TABLE members (
+    member_id SERIAL PRIMARY KEY,
+    firstname VARCHAR(255) NOT NULL,
+    lastname VARCHAR(255) NOT NULL,
+    email VARCHAR(255) UNIQUE,
+    join_date DATE,
+    password_hash VARCHAR(255)
+);
+
+CREATE TABLE staff (
+	staff_id SERIAL PRIMARY KEY,
+	firstname VARCHAR(255) NOT NULL,
+    	lastname VARCHAR(255) NOT NULL,
+	email VARCHAR(255) UNIQUE,
+	password_hash VARCHAR(255)
+);
+
+CREATE TABLE trainer (
+    trainer_id SERIAL PRIMARY KEY,
+    firstname VARCHAR(255) NOT NULL,
+    lastname VARCHAR(255) NOT NULL,
+    email VARCHAR(255) UNIQUE,
+    speciality VARCHAR(255) NOT NULL ,
+    password_hash VARCHAR(255)
+);
+
+
+CREATE TABLE rooms (
+    room_id SERIAL PRIMARY KEY,
+    equipment_type category NOT NULL,
+    need_maintenance BOOLEAN NOT NULL,
+    capacity INT CHECK (capacity > 0 AND capacity <= 99),
+    staff_id INT,
+    FOREIGN KEY (staff_id) REFERENCES staff(staff_id)
+);
+CREATE TABLE trainerSchedule (
+    trainer_id SERIAL PRIMARY KEY,
+    firstname VARCHAR(255) NOT NULL,
+    lastname VARCHAR(255) NOT NULL,
+    Speciality VARCHAR(255) NOT NULL,
+    dayOfWeek VARCHAR(255) NOT NULL,
+    timePeriod VARCHAR(255) NOT NULL,
+    
+);
+
+
