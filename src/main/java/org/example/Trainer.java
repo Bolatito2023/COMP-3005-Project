@@ -5,17 +5,20 @@ import org.mindrot.jbcrypt.BCrypt;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
+import java.time.LocalTime;
 
 
 public class Trainer{
     //This will tell if the password entered during log in is verified or not
     private static boolean read = false;
+
     //These are made so that when trainer wants to set availabilty after logging in
     //the database will automatically put its info and just ask for day of the week and time period
     private static String trainerFnName = "";
     private static String trainerLnName = "";
     private static String trainerEmail = "";
     private static String trainerSpeciality = "";
+    private static int trainer_id =0;
 
 
 
@@ -27,7 +30,7 @@ public class Trainer{
      * @param password_hash represents the staff's password.
      */
     public static void trainerRegister(String fn, String ln, String email,String speciality,String password_hash) {
-        String query = "INSERT INTO trainer (firstname, lastname, email,speciality,  password_hash) VALUES (?, ?, ?, ?, ?)";
+        String query = "INSERT INTO trainers (firstname, lastname, email,speciality,  password_hash) VALUES (?, ?, ?, ?, ?)";
 
         try {
             Connection connect = FitnessApp.getConnection();
@@ -59,7 +62,7 @@ public class Trainer{
         try {
             Connection connect = FitnessApp.getConnection();
 
-            PreparedStatement ps = connect.prepareStatement("SELECT * FROM trainer WHERE email = ?");
+            PreparedStatement ps = connect.prepareStatement("SELECT * FROM trainers WHERE email = ?");
 
             ps.setString(1, email);
             ResultSet rs = ps.executeQuery();
@@ -69,6 +72,7 @@ public class Trainer{
                 trainerLnName = rs.getString("lastname");
                 trainerEmail = rs.getString("email");
                 trainerSpeciality=  rs.getString("speciality");
+                trainer_id = rs.getInt("trainer_id");
                 storedHashedPassword = rs.getString("password_hash");
             }
 
@@ -120,31 +124,29 @@ public class Trainer{
 
     /**
      * Should be in a different table not trainers the members should look at that table to book a session
-     * @param firstname
-     * @param lastname
-     * @param specialty
+     * @param trainerId
+     * @param startTime
+     * @param endTime
      * @param dayOfWeek
      */
 
-    public static void scheduleAvailabilty( String firstname, String lastname,String specialty,
-                                     String dayOfWeek,String timePeriod) {
-        String query = "INSERT INTO trainerSchedule (firstname, lastname, speciality, dayOfWeek," +
-                "timePeriod) VALUES (?, ?, ?, ?, ?)";
+    public static void scheduleAvailability(int trainerId, String dayOfWeek, Time startTime, Time endTime) {
+        String query = "INSERT INTO trainerSchedule (trainer_id, dayOfWeek, starting_time, end_time) VALUES (?, ?, ?, ?)";
         try {
             Connection connect = FitnessApp.getConnection();
             PreparedStatement ps = connect.prepareStatement(query);
 
-            ps.setString(1, firstname);
-            ps.setString(2, lastname);
-            ps.setString(3, specialty);
-            ps.setString(4, dayOfWeek);
-            ps.setString(5, timePeriod);
+            ps.setInt(1, trainerId);
+            ps.setString(2, dayOfWeek);
+            ps.setTime(3, startTime);
+            ps.setTime(4, endTime);
+
             ps.executeUpdate();
-            System.out.println("Successfully set Availability");
+            System.out.println("Successfully set availability");
 
         } catch (SQLException e) {
             e.printStackTrace();
-            System.out.println("Error setting availability.");
+            System.out.println("Error setting availability");
         }
     }
 
@@ -164,6 +166,10 @@ public class Trainer{
 
     public static String getLnName(){
         return trainerLnName;
+    }
+
+    public static int getTrainer_id(){
+        return trainer_id;
     }
 
     /**

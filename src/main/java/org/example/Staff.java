@@ -3,15 +3,29 @@ package org.example;
 import org.mindrot.jbcrypt.BCrypt;
 
 import java.sql.*;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Scanner;
 
 public class Staff {
+
+
+    /**
+     * Member will be charged $50.0 for a private session per hour
+     */
+    private static final double PRIVATE_SESSION_RATE = 50.0;
+    /**
+     * Member will be charged $30.0 for a private session per hour
+     */
+    private static final double PUBLIC_SESSION_RATE = 30.0;
+    public enum SessionType {PRIVATE, PUBLIC}
     /**
      * Add a staff to table "staff" with specified information.
      * @param fn represents the member's first name.
      * @param ln represents the member's last name.
      * @param email represents the member's email address, this is unique.
      * @param password_hash represents the staff's password.
+     *
      */
     public static void staffRegister(String fn, String ln, String email,String password_hash) {
         String query = "INSERT INTO staff (firstname, lastname, email,  password_hash) VALUES (?, ?, ?, ?)";
@@ -142,9 +156,222 @@ public class Staff {
 
             int success = ps.executeUpdate();
 
-            if (success > 0) System.out.println("Room with IDm" + roomId + " has been marked as maintained.");
+            if (success > 0) System.out.println("Room with ID" + roomId + " has been marked as maintained.");
             else System.out.println("Room with ID" + roomId + " not found.");
 
         } catch (SQLException e) { e.printStackTrace(); }
     }
+
+    /**
+     * This method adds a bill to a member depending on their id, session type and hours spent
+     * @param memberId
+
+     */
+    public static void addMemberBill(int memberId, int sessionId) {
+
+        // Implement logic to add a bill to the member's account in the database
+        try {
+            Connection connect = FitnessApp.getConnection();
+            String query = "SELECT type FROM sessions WHERE member_id = ?";
+            PreparedStatement ps = connect.prepareStatement(query);
+            ps.setInt(1, memberId);
+            ResultSet rs = ps.executeQuery();
+            while (rs.next()) {
+                String sessionTypeString = rs.getString("type");
+                SessionType sessionType = SessionType.valueOf(sessionTypeString.toUpperCase()); // Convert string to enum
+                double ratePerHour = (sessionType == SessionType.PRIVATE) ? PRIVATE_SESSION_RATE : PUBLIC_SESSION_RATE;
+                double amount = calculateBillAmount(Session.getSessionLength(sessionId), ratePerHour);
+                boolean successful = insertAmountToBill(memberId, amount);
+                if (successful) {
+                    System.out.println("Bill successfully added.");
+                } else {
+                    System.out.println("Failed to add Bill");
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public static void processPayment(int bill_id) {
+        try {
+            Connection connection = FitnessApp.getConnection();
+
+            // Check if the amount is 0
+            PreparedStatement checkStatement = connection.prepareStatement("SELECT amount FROM bills WHERE bill_id = ?");
+            checkStatement.setInt(1, bill_id);
+            ResultSet rs = checkStatement.executeQuery();
+
+            if (rs.next()) {
+                double amount = rs.getDouble("amount");
+                if (amount == 0) {
+                    // Update status to 'paid'
+                    PreparedStatement updateStatement = connection.prepareStatement("UPDATE bills SET status = 'paid' WHERE bill_id = ?");
+                    updateStatement.setInt(1, bill_id);
+                    int rowsUpdated = updateStatement.executeUpdate();
+                    if (rowsUpdated > 0) {
+                        System.out.println("Payment has been processed");
+                    } else {
+                        System.out.println("Unable to process Payment");
+                    }
+                } else {
+                    System.out.println("Payment cannot be processed because the amount is not zero.");
+                }
+            } else {
+                System.out.println("No bill found with the provided bill ID.");
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public static void viewMemberBillHistory(){
+        try {
+            Connection connect = FitnessApp.getConnection();
+
+            PreparedStatement ps = connect.prepareStatement("SELECT * FROM bills");
+
+            //ps.setInt(1, member_id);
+            ResultSet rs = ps.executeQuery();
+
+            System.out.println("\n");
+            System.out.println("----------------------------------------------------------------");
+            while (rs.next()) {
+                int bill_id = rs.getInt("bill_id");
+                int member_id = rs.getInt("member_id");
+                double amount = rs.getDouble("amount");
+                String status = rs.getString("status");
+
+                System.out.println("Bill ID: "+ bill_id + ", Member ID: " +member_id + ", Amount: $" +amount + ", Status: "+ status);
+            }
+            System.out.println("----------------------------------------------------------------");
+
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+    }
+    private static boolean insertAmountToBill(int memberId, double amount) {
+        try {
+            Connection connect = FitnessApp.getConnection();
+            String query = "INSERT INTO bills (member_id, amount, status) VALUES (?, ?, 'unpaid')";
+            PreparedStatement ps = connect.prepareStatement(query);
+            ps.setInt(1, memberId);
+            ps.setDouble(2, amount);
+            int rowsAffected = ps.executeUpdate();
+            return rowsAffected > 0;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    /**
+     * This method will calculate the members bill based on type hours spent e.t.c
+     * @param hoursSpent
+     * @param ratePerHour
+     * @return
+     */
+    private static double calculateBillAmount(float hoursSpent, double ratePerHour) {
+
+        return ratePerHour*hoursSpent;
+    }
+    public static void displaySessionRequests() {
+        String query = "SELECT s.session_id, s.room_id, s.trainer_id, s.date, s.starting_time, s.end_time, s.type, COUNT(sm.member_id) AS member_count " +
+                "FROM sessions s LEFT JOIN session_members sm ON s.session_id = sm.session_id " +
+                "WHERE s.status = 'trainer_confirmed' " +
+                "GROUP BY s.session_id " +
+                "HAVING COUNT(sm.member_id) > 0";
+
+        Scanner scanner = new Scanner(System.in);
+
+        try {
+            Connection connect = FitnessApp.getConnection();
+            PreparedStatement ps = connect.prepareStatement(query);
+
+            boolean allDecided;
+            do {
+                allDecided = true;
+
+                ResultSet rs = ps.executeQuery();
+
+                List<Integer> pending1 = new ArrayList<>();
+                List<Integer> pending2 = new ArrayList<>();
+
+                if (!rs.isBeforeFirst()) {
+                    System.out.println("No more session requests.\n");
+                    return;
+                }
+                else {
+                    System.out.println("----------------------------------------------------------------");
+                    while (rs.next()) {
+                        System.out.println("Session ID: " + rs.getInt("session_id") +
+                                ", Room ID: " + rs.getInt("room_id") +
+                                ", Trainer ID: " + rs.getInt("trainer_id") +
+                                ", Date: " + rs.getDate("date") +
+                                ", Starting Time: " + rs.getTime("starting_time") +
+                                ", End Time: " + rs.getTime("end_time") +
+                                ", Type: " + rs.getString("type") +
+                                ", Number of People: " + rs.getInt("member_count"));
+                        pending1.add(rs.getInt("session_id"));
+                    }
+                    System.out.println("----------------------------------------------------------------");
+                    System.out.println("Enter session IDs that you wish to accept, separated by commas, invalid inputs will be skipped.");
+
+
+                    String input = scanner.nextLine();
+
+                    if(!input.isEmpty()) {
+                        String[] sessionIds = input.replace(" ", "").split(",");
+                        for (String sessionId : sessionIds) {
+                            if (pending1.contains(Integer.parseInt(sessionId))) {
+                                Session.updateSessionStatus(sessionId, "staff_confirmed");
+                            }
+                        }
+                        System.out.println("Sessions accepted");
+                    }
+
+                }
+                ResultSet rs2 = ps.executeQuery();
+
+                if(rs2.isBeforeFirst()) {
+                    System.out.println("----------------------------------------------------------------");
+                    while (rs2.next()) {
+                        System.out.println("Session ID: " + rs2.getInt("session_id") +
+                                ", Room ID: " + rs2.getInt("room_id") +
+                                ", Trainer ID: " + rs2.getInt("trainer_id") +
+                                ", Date: " + rs2.getDate("date") +
+                                ", Starting Time: " + rs2.getTime("starting_time") +
+                                ", End Time: " + rs2.getTime("end_time") +
+                                ", Number of People: " + rs2.getInt("member_count"));
+                        pending2.add(rs2.getInt("session_id"));
+                    }
+                    System.out.println("----------------------------------------------------------------");
+                    System.out.println("Enter session IDs that you wish to deny, separated by commas, invalid inputs will be skipped.");
+
+                    String input = scanner.nextLine();
+
+                    if(input.isEmpty()) { return; }
+                    else {
+                        String[] sessionIds = input.replace(" ", "").split(",");
+                        for (String sessionId : sessionIds) {
+                            if (pending2.contains(Integer.parseInt(sessionId))) {
+                                Session.updateSessionStatus(sessionId, "denied");
+                            }
+                        }
+                        System.out.println("Sessions denied");
+                    }
+                }
+
+            }while(!allDecided);
+
+        } catch (SQLException e) { e.printStackTrace(); }
+    }
+
 }
+
+
+
+
+

@@ -1,12 +1,12 @@
 package org.example;
 
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.SQLException;
+import java.sql.*;
 import java.time.LocalDate;
+import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
 import java.util.Objects;
 import java.util.Scanner;
-import java.sql.Date;
+
 
 public class FitnessApp {
     private static String username;
@@ -119,40 +119,7 @@ public class FitnessApp {
             String option = scanner.nextLine().trim();
             switch (option) {
                 case "1":
-                    System.out.println("\n");
-                    System.out.println("1) Member Registration\n" +
-                            "2) Trainer Registration\n" +
-                            "3) Staff Registration\n" +
-                            "0) Return");
-                    String reg_option = scanner.nextLine();
-                    if(Objects.equals(reg_option, "0")) break;
-                    System.out.println("Enter your First name:");
-                    String reg_fn = scanner.nextLine();
-                    System.out.println("Enter your Last name:");
-                    String reg_ln = scanner.nextLine();
-                    System.out.println("Enter your Email name:");
-                    String reg_email = scanner.nextLine();
-                    String reg_speciality = "";
-                    if(Objects.equals(reg_option, "2")) {
-                        System.out.println("Enter your Speciality:");// This is only asked if the user is a trainer
-                        reg_speciality = scanner.nextLine();
-                    }
-                    System.out.println("Enter your password:");
-                    String reg_password = scanner.nextLine();
-                    switch(reg_option) {
-                        case "1":
-                            Member.memberRegister(reg_fn,reg_ln,reg_email, Date.valueOf(LocalDate.now()) ,reg_password);
-                            break;
-                        case "2":
-                            Trainer.trainerRegister(reg_fn, reg_ln, reg_email,reg_speciality, reg_password);
-                            break;
-                        case "3":
-                            Staff.staffRegister(reg_fn, reg_ln, reg_email, reg_password);
-                        default:
-                            System.out.println("Invalid option, please try again.");
-                    }
-
-
+                    handleRegistration();
                     break;
                 case "2":
                     System.out.println("\n");
@@ -168,14 +135,14 @@ public class FitnessApp {
                     break;
 
                 case "3":
-                    System.out.println("\n");
-                    System.out.println("Enter your Email name:");
+                    System.out.println("Enter your Email");
                     String staffLogin_email = scanner.nextLine();
                     System.out.println("Enter your password:");
                     String staffLogin_password = scanner.nextLine();
                     tempId = Staff.staffLogin(staffLogin_email,staffLogin_password);
                     if(tempId != null) { currentId = tempId; }
-                    //Staff.CheckMaintenance(currentId); //Just to test the function
+                    else { continue; }
+                    staffInterface(currentId);
                     break;
                 case "4":
                     System.out.println("Enter your Email name:");
@@ -183,7 +150,8 @@ public class FitnessApp {
                     System.out.println("Enter your password:");
                     String memberLogin_password = scanner.nextLine();
                     tempId = Member.memberLogin(memberLogin_email,memberLogin_password);
-                    if(tempId != null) { currentId = tempId; memberFunction(currentId); }
+                    if(tempId != null) { currentId = tempId;  }
+                    memberFunction(currentId);
 
                     break;
                 case "0":
@@ -214,10 +182,21 @@ public class FitnessApp {
                 System.out.println("Enter your day of the week");
                 String dayOfWeek = scanner.nextLine();
 
-                System.out.println("Enter your time period");
-                System.out.println("e.g 11:30am - 1:00pm");
-                String timePeriod = scanner.nextLine();
-                Trainer.scheduleAvailabilty(Trainer.getFnName(),Trainer.getLnName(),Trainer.getSpeciality(),dayOfWeek,timePeriod);
+                DateTimeFormatter formatter = DateTimeFormatter.ofPattern("HH:mm");
+
+                System.out.println("Enter your start time (Note it is in 24hrs)");
+                System.out.println("e.g., 1:00pm write 13:00");
+                String startInput = scanner.nextLine();
+                LocalTime startTime = LocalTime.parse(startInput, formatter);
+                Time startTimeSql = Time.valueOf(startTime);
+
+                System.out.println("Enter your end time (Note it is in 24hrs)");
+                String endInput = scanner.nextLine();
+                LocalTime endTime = LocalTime.parse(endInput, formatter);
+                Time endTimeSql = Time.valueOf(endTime);
+
+
+                Trainer.scheduleAvailability(Trainer.getTrainer_id(),dayOfWeek,startTimeSql,endTimeSql);
                 break;
             case "2":
                 break;
@@ -229,6 +208,67 @@ public class FitnessApp {
         }
     }
 
+
+    private static void handleRegistration() {
+        Scanner scanner = new Scanner(System.in);
+        while(true) {
+            System.out.println("1) Member Registration\n" +
+                    "2) Trainer Registration\n" +
+                    "3) Staff Registration\n" +
+                    "0) Return");
+            String reg_option = scanner.nextLine();
+
+            if(Objects.equals(reg_option, "0")) return;
+
+            if (Objects.equals(reg_option, "1") || Objects.equals(reg_option, "2") || Objects.equals(reg_option, "3")) {
+                System.out.println("Enter your First name:");
+                String reg_fn = scanner.nextLine();
+                System.out.println("Enter your Last name:");
+                String reg_ln = scanner.nextLine();
+                System.out.println("Enter your Email:");
+                String reg_email = scanner.nextLine();
+                System.out.println("Enter your password:");
+                String reg_password = scanner.nextLine();
+
+                switch(reg_option) {
+                    case "1":
+                        Member.memberRegister(reg_fn,reg_ln,reg_email, Date.valueOf(LocalDate.now()) ,reg_password);
+                        return;
+                    case "2":
+                        System.out.println("What is your speciality?\n" +
+                                "1) STRENGTH\n" +
+                                "2) CARDIO\n" +
+                                "3) WATER-BASED\n" +
+                                "4) MINDBODY");
+                        String reg_speciality = scanner.nextLine();
+                        switch(reg_speciality) {
+                            case "1":
+                                reg_speciality = "STRENGTH";
+                                break;
+                            case "2":
+                                reg_speciality = "CARDIO";
+                                break;
+                            case "3":
+                                reg_speciality = "WATER-BASED";
+                                break;
+                            case "4":
+                                reg_speciality = "MINDBODY";
+                                break;
+                            default:
+                                System.out.println("Invalid option, please try again.");
+                        }
+                        Trainer.trainerRegister(reg_fn,reg_ln,reg_email, reg_speciality, reg_password);
+                        return;
+                    case "3":
+                        Staff.staffRegister(reg_fn, reg_ln, reg_email, reg_password);
+                        return;
+                    default:
+                        System.out.println("Invalid option, please try again.");
+                }
+            }
+            else {System.out.println("Invalid option, please try again.");}
+        }
+    }
     /**
      * This method is called when the member successfully logs in
      * More options will be added such as viewing fitness goals e.t.c
@@ -239,7 +279,15 @@ public class FitnessApp {
             System.out.println("\n");
             System.out.println("Welcome " + Member.getMemberName() + "\n" +
                     "1) View Trainer Schedule\n" +
-                    "2) Update Information\n" +
+                    "2) Update Personal Information\n" +
+                    "3) Set Fitness Goals\n" +
+                    "4) Update Fitness Goals\n" +
+                    "5) Record Health Metrics\n" +
+                    "6) Update Health Metrics\n" +
+                    "7) View Bill\n" +
+                    "8) Pay Bill\n" +
+                    "9) Search Up Exercises \n" +
+                    "10) Display DashBoard \n"+
                     "0) Exit");
 
 
@@ -260,12 +308,125 @@ public class FitnessApp {
 
                     Member.updatePersonalInformation(new_fn,new_ln,new_email,new_password,id);
                     break;
+                case "3":
+                    System.out.println("Enter your fitness goal type (e.g., lose weight, gain muscle, etc.):");
+                    String goal_type = scanner.nextLine();
+
+                    System.out.println("Enter your fitness goal value (e.g., 5 kg, run 10 km, etc.):");
+                    String goal_value = scanner.nextLine();
+
+                    System.out.println("Enter your goal deadline (format: yyyy-MM-dd):");
+                    String deadline = scanner.nextLine();
+
+                    Member.setFitnessGoal(id,goal_type,goal_value,deadline);
+                    break;
+                case "4":
+                    System.out.println("Enter your fitness goal value (e.g., 5 kg, run 10 km, etc.):");
+                    String newGoal_value = scanner.nextLine();
+
+                    System.out.println("Enter your goal deadline (format: yyyy-MM-dd):");
+                    String newDeadline = scanner.nextLine();
+
+                    System.out.println("If achieved goal, enter 'achieved'. If not yet achieved, enter 'not yet achieved':");
+                    String achieved = scanner.nextLine();
+
+
+                    Member.updateFitnessGoal(id,newGoal_value,newDeadline,achieved);
+                    break;
+                case "5":
+                    System.out.println("Enter your weight:");
+                    double weight = scanner.nextDouble();
+                    scanner.nextLine(); // Consume the newline character
+
+                    System.out.println("Enter your height:");
+                    double height = scanner.nextDouble();
+                    scanner.nextLine(); // Consume the newline character
+
+                    System.out.println("Enter your blood pressure:");
+                    double blood_pressure = scanner.nextDouble();
+                    scanner.nextLine(); // Consume the newline character
+
+                    Member.recordHealthMetrics(id,weight,height,blood_pressure,Date.valueOf(LocalDate.now()));
+                    break;
+                case "6":
+                    System.out.println("Enter your weight:");
+                    double new_weight = scanner.nextDouble();
+                    scanner.nextLine(); // Consume the newline character
+
+                    System.out.println("Enter your height:");
+                    double new_height = scanner.nextDouble();
+                    scanner.nextLine(); // Consume the newline character
+
+                    System.out.println("Enter your blood pressure:");
+                    double new_blood_pressure = scanner.nextDouble();
+                    scanner.nextLine(); // Consume the newline character
+
+                    Member.updateHealthMetrics(id, new_weight,new_height,new_blood_pressure,Date.valueOf(LocalDate.now()));
+                    break;
+                case "7":
+                    Member.viewBillHistory(id);
+                    break;
+                case "8":
+                    System.out.println("Enter your amount:");
+                    double amount = scanner.nextDouble();
+                    Member.makePayment(amount,id);
+                    break;
+                case "9":
+                    System.out.println("Enter your category:");
+                    String exercise_category = scanner.nextLine();
+                    Member.searchUpExercise(exercise_category);
+                    break;
+                case "10":
+                    Member.displayHealthStatistics(id);
+                    Member.displayFitnessAchievements(id);
+                    System.out.println("Enter your category:");
+                    String category = scanner.nextLine();
+                    Member.displayExerciseRoutines(id,category);
+                    break;
                 case "0":
                     return; // Exit the member function and return to the main menu
                 default:
                     System.out.println("Invalid option, please try again.");
             }
         }
+    }
+    /**
+     * Display the interface when user log in as a staff
+     * @param staffId represents the staff's ID
+     */
+    private static void staffInterface(int staffId) {
+        String query = "SELECT firstname, lastname FROM members WHERE staff_id = ?";
+
+        try {
+            Connection connect = getConnection();
+            PreparedStatement ps = connect.prepareStatement(query);
+
+            ps.setInt(1, staffId);
+            ResultSet rs = ps.executeQuery();
+
+            while(true) {
+                System.out.println("\nCurrent staff: " + rs.getString("firstname") + " " + rs.getString("lastname"));
+                System.out.println("""
+                    1) Maintenance status
+                    2) Display requests
+                    3) Logout
+                    """);
+
+                Scanner scanner = new Scanner(System.in);
+                String option = scanner.nextLine();
+
+                switch(option) {
+                    case "1":
+                        Staff.CheckMaintenance(staffId);
+                        break;
+                    case"2":
+                        Staff.displaySessionRequests();
+                        break;
+                    case"3": return;
+                    default: System.out.println("Invalid option, please try again.");
+                }
+            }
+        } catch (SQLException e) { e.printStackTrace(); }
     }
 
 }
