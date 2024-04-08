@@ -19,6 +19,7 @@ public class Member {
 
     private static String memberName = "";
 
+
     private static int routineId = 0;
     private static String routineName = " ";
     private static int durationMinutes = 0;

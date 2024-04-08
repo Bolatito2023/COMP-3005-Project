@@ -4,6 +4,7 @@ package org.example;
  * Not sure if this class will be used yet but it will enable the trainer to view
  * members registered with them
  *
+ *
  */
 public class MemberProfile {
     private int memberId;

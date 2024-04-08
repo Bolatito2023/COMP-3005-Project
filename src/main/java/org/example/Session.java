@@ -5,6 +5,7 @@ import java.time.LocalDate;
 import java.sql.Time;
 public class Session {
 
+
     /**
      *Add a session to the sessions table, given the room, trainer, date, time and whom requested
      *Also add corresponding info to session_members relation
