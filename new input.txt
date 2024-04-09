@@ -78,10 +78,12 @@ CREATE TABLE goals (
     goal_id SERIAL PRIMARY KEY,
     member_id INT,
     goal_type VARCHAR(50),
-    goal_value VARCHAR(100), -- Change data type based on requirement
+    goal_value VARCHAR(100), 
     deadline VARCHAR(50),
+    status VARCHAR(255) DEFAULT 'not yet achieved',
     FOREIGN KEY (member_id) REFERENCES Member(member_id)
 );
+
 
 -- Creating the HealthMetrics table
 CREATE TABLE healthMetrics (
@@ -100,3 +102,16 @@ CREATE TABLE exercise_routine (
     duration_minutes VARCHAR(255) NOT NULL,
     intensity_level VARCHAR(255) NOT NULL
     );
+
+CREATE TABLE my_exercise_routine (
+    member_id INT NOT NULL,
+    routine_name VARCHAR(255) NOT NULL,
+    category VARCHAR(50) NOT NULL,
+    duration_minutes INT NOT NULL,
+    intensity_level INT NOT NULL,
+    FOREIGN KEY (member_id) REFERENCES Member(member_id),
+    FOREIGN KEY (routine_name) REFERENCES exercise_routine(routine_name),
+    FOREIGN KEY (category) REFERENCES exercise_routine(category),
+    FOREIGN KEY (duration_minutes) REFERENCES exercise_routine(duration_minutes),
+    FOREIGN KEY (intensity_level) REFERENCES exercise_routine(intensity_level)
+);
