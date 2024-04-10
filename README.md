@@ -1,15 +1,43 @@
 HEALTH AND FITNESS CLUB
 COMP 3004 WINTER 2024 GROUP PROJECT
+Welcome to our Health and Fitness Club system project! This document provides a guide on setting up the system and explains its functionalities for different users.
 
-The project's objective is to design and implement a health and fitness club system that executes various functions that would be discussed later in this document. 
-It serves different functions for different users such as members, administrative staff and trainers. 
-The Health and Fitness Application uses Java (IntelliJ) and PostgreSQL. 
+INSTALLATION AND SETUP
+Database Setup:
+Create a new database named 'HealthAndFitnessClub' in PGadmin.
+Use the DDL file in the 'SQL' folder to create all necessary tables.
 
-INSTALLATION AND SET UP:
-In order to set up the system correctly ensure that the database is created on PGadmin before attempting to interact with the Java subsystem. 
-To do this, create a new database named 'HealthAndFitnessClub' and use the DDL file stored in the 'SQL' file to create all the tables. 
-After doing this you are almost all set to start running the application. In Java edit the username, password and portnumber fields stored in the FitnessApp class. You would need the correct parameters
-in order to communicate with the database. Check for the correct parameters in PGadmin. The username is usually named 'postgres' and the portnumber can be found....
+Java Configuration:
+Edit the username, password, and port number fields in the FitnessApp class to match your PostgreSQL database credentials.
+Ensure correct parameters (e.g., username 'postgres', port number) are used for database communication.
 
-In order to test some functionalities you may need to add some data into the table first. This is because the member, staff and trainer tables have hashpassword attributes that can not be retrieved
-from IntelliJ. You may need to register two members, one trainer and one administrative staff
+DML File Setup:
+Add initial data to tables for testing functionalities:
+Register at least two members, one trainer, and one administrative staff.
+
+SYSTEM FUNCTIONALITIES
+Member Functions:
+User Registration
+Profile Management
+Dashboard Display
+Schedule Management (Personal Training Sessions, Group Fitness Classes)
+
+Trainer Functions:
+Schedule Management (Availability)
+Member Profile Viewing
+
+Administrative Staff Functions:
+Room Booking Management
+Equipment Maintenance Monitoring
+Class Schedule Updating
+Billing and Payment Processing (Integration with Payment Service)
+
+TESTING AND USAGE
+After setup, run the Java application to access the Health and Fitness Club system.
+Use various functionalities to simulate real-world scenarios and test system behavior.
+Monitor database interactions for data accuracy and system integrity.
+
+CONTRIBUTORS
+Abolarinwa Elegbede
+Forewa Aboderin
+Mike Fang
