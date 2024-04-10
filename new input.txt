@@ -81,19 +81,18 @@ CREATE TABLE goals (
     goal_value VARCHAR(100), 
     deadline VARCHAR(50),
     status VARCHAR(255) DEFAULT 'not yet achieved',
-    FOREIGN KEY (member_id) REFERENCES Member(member_id)
+    FOREIGN KEY (member_id) REFERENCES members(member_id)
 );
-
 
 -- Creating the HealthMetrics table
 CREATE TABLE healthMetrics (
     metric_id SERIAL PRIMARY KEY,
-    member_id INT,
-    weight DECIMAL(5,2), -- Example: Up to 5 digits, 2 decimal places
-    height DECIMAL(5,2), -- Example: Up to 5 digits, 2 decimal places
-    blood_pressure VARCHAR(20),
-    record_date DATE,
-    FOREIGN KEY (member_id) REFERENCES Member(member_id)
+    member_id INT NOT NULL,
+    weight DECIMAL(5,2) NOT NULL, 
+    height DECIMAL(5,2) NOT NULL, 
+    blood_pressure VARCHAR(20) NOT NULL,
+    record_date DATE NOT NULL,
+    FOREIGN KEY (member_id) REFERENCES members(member_id)
 );
 CREATE TABLE exercise_routine (
     routine_id SERIAL PRIMARY KEY,
@@ -102,16 +101,42 @@ CREATE TABLE exercise_routine (
     duration_minutes VARCHAR(255) NOT NULL,
     intensity_level VARCHAR(255) NOT NULL
     );
-
-CREATE TABLE my_exercise_routine (
+ CREATE TABLE my_exercise_routine (
     member_id INT NOT NULL,
     routine_name VARCHAR(255) NOT NULL,
     category VARCHAR(50) NOT NULL,
     duration_minutes INT NOT NULL,
     intensity_level INT NOT NULL,
-    FOREIGN KEY (member_id) REFERENCES Member(member_id),
-    FOREIGN KEY (routine_name) REFERENCES exercise_routine(routine_name),
-    FOREIGN KEY (category) REFERENCES exercise_routine(category),
-    FOREIGN KEY (duration_minutes) REFERENCES exercise_routine(duration_minutes),
-    FOREIGN KEY (intensity_level) REFERENCES exercise_routine(intensity_level)
-);
+    FOREIGN KEY (member_id) REFERENCES members(member_id)
+    );
+-- WATER-BASED exercises
+INSERT INTO exercise_routine (routine_name, category, duration_minutes, intensity_level)
+VALUES 
+    ('Swimming Laps', 'WATER-BASED', 45, 6),
+    ('Aqua Aerobics Class', 'WATER-BASED', 60, 4),
+    ('Water Polo Practice', 'WATER-BASED', 90, 7),
+    ('Scuba Diving Training', 'WATER-BASED', 120, 8);
+
+-- STRENGTH exercises
+INSERT INTO exercise_routine (routine_name, category, duration_minutes, intensity_level)
+VALUES 
+    ('Deadlifts', 'STRENGTH', 40, 8),
+    ('Barbell Squats', 'STRENGTH', 30, 7),
+    ('Bench Press', 'STRENGTH', 45, 6),
+    ('Dumbbell Lunges', 'STRENGTH', 35, 7);
+
+-- CARDIO exercises
+INSERT INTO exercise_routine (routine_name, category, duration_minutes, intensity_level)
+VALUES 
+    ('Morning Run', 'CARDIO', 45, 6),
+    ('Indoor Cycling Class', 'CARDIO', 60, 5),
+    ('HIIT Workout', 'CARDIO', 30, 8),
+    ('Jump Rope Session', 'CARDIO', 20, 7);
+
+-- MINDBODY exercises
+INSERT INTO exercise_routine (routine_name, category, duration_minutes, intensity_level)
+VALUES 
+    ('Guided Meditation', 'MINDBODY', 20, 2),
+    ('Vinyasa Yoga Flow', 'MINDBODY', 60, 3),
+    ('Tai Chi Practice', 'MINDBODY', 45, 4),
+    ('Pilates Reformer Class', 'MINDBODY', 50, 5);
