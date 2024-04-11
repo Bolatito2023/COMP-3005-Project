@@ -42,8 +42,8 @@ VALUES
 --Inserting data into the trainerschedule table
 INSERT INTO trainerschedule (trainer_id, dayOfWeek, starting_time, end_time)
 VALUES
-	('1', 'Monday', '8:00','9:00'),
-    ('1', 'Monday', '12:30','13:30');
+	('1', 'MONDAY', '8:00','9:00'),
+    ('1', 'MONDAY', '12:30','13:30');
 
 
 
