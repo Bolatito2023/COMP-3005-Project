@@ -12,9 +12,8 @@ Java Configuration:
 Edit the username, password, and port number fields in the FitnessApp class to match your PostgreSQL database credentials.
 Ensure correct parameters (e.g., username 'postgres', port number) are used for database communication.
 
-DML File Setup:
-Add initial data to tables for testing functionalities:
-Register at least two members, one trainer, and one administrative staff.
+DML and DDL File Setup:
+Add initial data to tables for testing functionalities.
 
 SYSTEM FUNCTIONALITIES
 Member Functions:
