@@ -29,7 +29,7 @@ VALUES
 INSERT INTO sessions (room_id, trainer_id, date, starting_time, end_time, status, type)
 VALUES
 	('1','1','2024-01-04', '12:30', '13:30', 'staff_confirmed','PUBLIC'),
-    ('1','1','2024-01-04', '15:30', '16:30', 'staff_confirmed','PRIVATE');
+    ('1','1','2024-12-04', '15:30', '16:30', 'staff_confirmed','PRIVATE');
 
 
 	
