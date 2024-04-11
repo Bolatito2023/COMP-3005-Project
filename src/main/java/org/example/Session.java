@@ -82,6 +82,12 @@ public class Session {
         return -1;
     }
 
+    /**
+     * Update the Session status
+     * Status could be denial or staff confirmed
+     * @param sessionId
+     * @param newStatus
+     */
     public static void updateSessionStatus(String sessionId, String newStatus) {
         String query = "UPDATE sessions SET status = ? WHERE session_id = ?";
         try {

@@ -14,8 +14,6 @@ public class FitnessApp {
     private static String password;
     private static int portNumber;
 
-    private static Member member;
-    private static Staff staff;
 
     private static Trainer trainer;
 
@@ -29,14 +27,15 @@ public class FitnessApp {
     private void setPassword(String pass) { password = pass; }
     private void setPortNumber(int port) { portNumber = port; }
 
+    /**
+     * Constructor for FitnessApp
+     */
     public FitnessApp() {
         username = "postgres";
         password = "gbemisola23$";
         portNumber = 2244;
 
-        member = new Member();
-        staff = new Staff();
-        trainer = new Trainer();
+
     }
 
     /**
@@ -401,7 +400,7 @@ public class FitnessApp {
                             System.out.println("Invalid choice. Please enter a number between 1 and 4.");
                             return; // Exit method if choice is invalid
                     }
-                    scanner.nextLine(); // Consume the newline character
+                    //scanner.nextLine(); // Consume the newline character
                     Member.searchUpExercise(exerciseCategory);
                     break;
                 case "10":

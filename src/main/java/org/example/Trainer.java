@@ -38,7 +38,7 @@ public class Trainer {
             ps.setString(2, ln);
             ps.setString(3, email);
             ps.setString(4, speciality);
-            ps.setString(5, BCrypt.hashpw(password_hash, BCrypt.gensalt()));
+            ps.setString(5, password_hash);
             ps.executeUpdate();
             System.out.println("New Trainer registered.");
 
@@ -75,8 +75,7 @@ public class Trainer {
             }
 
             if (storedHashedPassword != null) {
-                boolean read = BCrypt.checkpw(password, storedHashedPassword);
-                if (read) {
+                if (password.equals(storedHashedPassword)) {
                     System.out.println("Logged in successfully.");
                     return rs.getInt("trainer_id");
                 } else {

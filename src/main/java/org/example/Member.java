@@ -47,7 +47,7 @@ public class Member {
             ps.setString(2, ln);
             ps.setString(3, email);
             ps.setDate(4, join_date);
-            ps.setString(5, BCrypt.hashpw(password_hash, BCrypt.gensalt()));
+            ps.setString(5, password_hash);
             ps.executeUpdate();
             System.out.println("New member registered.");
 
@@ -59,14 +59,17 @@ public class Member {
      *Log in as a member, email and password required.
      * @return the member's id
      */
+    /**
+     * Log in as a member, email and password required.
+     * @return the member's id if login successful, null otherwise
+     */
     public static Integer memberLogin(String email, String password) {
-        String storedHashedPassword = null;
+        String storedPassword = null;
 
         try {
             Connection connect = FitnessApp.getConnection();
 
             PreparedStatement ps = connect.prepareStatement("SELECT * FROM members WHERE email = ?");
-
             ps.setString(1, email);
             ResultSet rs = ps.executeQuery();
 
@@ -74,15 +77,14 @@ public class Member {
                 memberName = rs.getString("firstname");
                 member_id = rs.getInt("member_id");
 
-                storedHashedPassword = rs.getString("password_hash");
+                storedPassword = rs.getString("password_hash");
             }
 
-            if (storedHashedPassword != null) {
-                //This will tell if the password entered during log in is verified or not
-                boolean read = BCrypt.checkpw(password, storedHashedPassword);
-                if (read) {
+            if (storedPassword != null) {
+                // Compare entered password with stored password directly
+                if (password.equals(storedPassword)) {
                     System.out.println("Logged in successfully.");
-                    return (rs.getInt("member_id"));
+                    return rs.getInt("member_id");
                 } else {
                     System.out.println("Incorrect password.");
                     return null;
@@ -266,8 +268,8 @@ public class Member {
             return null;
         }
     }
-    /** This function sets the members fitness goals
-     * Deadline should be in format yyyy-MM-dd
+    /** This function sets the members fitness goals status
+     * Whether achieved or not achieved
      * @param member_id
      * @param goal_type
      * @param goal_value

@@ -41,7 +41,7 @@ public class Staff {
             ps.setString(1, fn);
             ps.setString(2, ln);
             ps.setString(3, email);
-            ps.setString(4, BCrypt.hashpw(password_hash, BCrypt.gensalt()));
+            ps.setString(4, password_hash);
             ps.executeUpdate();
             System.out.println("New staff registered.");
 
@@ -71,10 +71,9 @@ public class Staff {
 
             if (storedHashedPassword != null) {
                 //This will tell if the password entered during log in is verified or not
-                boolean read = BCrypt.checkpw(password, storedHashedPassword);
-                if (read) {
+                if (password.equals(storedHashedPassword)) {
                     System.out.println("Logged in successfully.");
-                    return (rs.getInt("staff_id"));
+                    return rs.getInt("staff_id");
                 } else {
                     System.out.println("Incorrect password.");
                     return null;
