@@ -116,22 +116,23 @@ public class FitnessApp {
                     3) Staff Login
                     4) Member Login
                     0) Exit""");
-            String option = scanner.nextLine().trim();
+            String option = scanner.nextLine();
             switch (option) {
                 case "1":
                     handleRegistration();
                     break;
                 case "2":
-                    System.out.println("\n");
                     System.out.println("Enter your Email name:");
                     String tEmail_login = scanner.nextLine();
 
                     System.out.println("Enter your password:");
                     String tPassword_login = scanner.nextLine();
                     tempId = Trainer.trainerLogin(tEmail_login,tPassword_login);
-                    if(tempId != null) { currentId = tempId; }
+                    if(tempId != null) { currentId = tempId;
+                    }
+                    else { continue; }
                     trainerFunction();
-                    //Staff.CheckMaintenance(currentId); //Just to test the function
+
                     break;
 
                 case "3":
@@ -151,6 +152,7 @@ public class FitnessApp {
                     String memberLogin_password = scanner.nextLine();
                     tempId = Member.memberLogin(memberLogin_email,memberLogin_password);
                     if(tempId != null) { currentId = tempId;  }
+                    else { continue; }
                     memberFunction(currentId);
 
                     break;
@@ -170,41 +172,47 @@ public class FitnessApp {
 
     public static void trainerFunction(){
         Scanner scanner = new Scanner(System.in);
-        System.out.println("\n");
-        System.out.println("Welcome " + trainer.getFnName() +"\n"+ """
+
+        while(true){
+            System.out.println("Welcome " + trainer.getFnName() +"\n"+ """
                     1) Set Availability
                     2) View Member Profile
                     0) Exit""");
 
-        String option = scanner.nextLine().trim();
-        switch (option) {
-            case "1":
-                System.out.println("Enter your day of the week");
-                String dayOfWeek = scanner.nextLine();
+            String option = scanner.nextLine().trim();
+            switch (option) {
+                case "1":
+                    System.out.println("Enter your day of the week");
+                    String dayOfWeek = scanner.nextLine();
 
-                DateTimeFormatter formatter = DateTimeFormatter.ofPattern("HH:mm");
+                    DateTimeFormatter formatter = DateTimeFormatter.ofPattern("HH:mm");
 
-                System.out.println("Enter your start time (Note it is in 24hrs)");
-                System.out.println("e.g., 1:00pm write 13:00");
-                String startInput = scanner.nextLine();
-                LocalTime startTime = LocalTime.parse(startInput, formatter);
-                Time startTimeSql = Time.valueOf(startTime);
+                    System.out.println("Enter your start time (Note it is in 24hrs)");
+                    System.out.println("e.g., 1:00pm write 13:00");
+                    String startInput = scanner.nextLine();
+                    LocalTime startTime = LocalTime.parse(startInput, formatter);
+                    Time startTimeSql = Time.valueOf(startTime);
 
-                System.out.println("Enter your end time (Note it is in 24hrs)");
-                String endInput = scanner.nextLine();
-                LocalTime endTime = LocalTime.parse(endInput, formatter);
-                Time endTimeSql = Time.valueOf(endTime);
+                    System.out.println("Enter your end time (Note it is in 24hrs)");
+                    String endInput = scanner.nextLine();
+                    LocalTime endTime = LocalTime.parse(endInput, formatter);
+                    Time endTimeSql = Time.valueOf(endTime);
 
 
-                Trainer.scheduleAvailability(Trainer.getTrainer_id(),dayOfWeek,startTimeSql,endTimeSql);
-                break;
-            case "2":
-                break;
-                //Trainer.memberSearch();
-            case "0":
-                return; // Exit the trainer function and return to the main menu
-            default:
-                System.out.println("Invalid option, please try again.");
+                    Trainer.scheduleAvailability(Trainer.getTrainer_id(),dayOfWeek,startTimeSql,endTimeSql);
+                    break;
+                case "2":
+                    System.out.println("Member's first name:");
+                    String fn = scanner.nextLine();
+                    System.out.println("Member's last name:");
+                    String ln = scanner.nextLine();
+                    Trainer.memberSearch(fn, ln);
+                    break;
+                case "0":
+                    return; // Exit the trainer function and return to the main menu
+                default:
+                    System.out.println("Invalid option, please try again.");
+            }
         }
     }
 
@@ -288,6 +296,7 @@ public class FitnessApp {
                     "8) Pay Bill\n" +
                     "9) Search Up Exercises \n" +
                     "10) Display DashBoard \n"+
+                    "11) Request a session\n" +
                     "0) Exit");
 
 
@@ -321,17 +330,10 @@ public class FitnessApp {
                     Member.setFitnessGoal(id,goal_type,goal_value,deadline);
                     break;
                 case "4":
-                    System.out.println("Enter your fitness goal value (e.g., 5 kg, run 10 km, etc.):");
-                    String newGoal_value = scanner.nextLine();
-
-                    System.out.println("Enter your goal deadline (format: yyyy-MM-dd):");
-                    String newDeadline = scanner.nextLine();
-
                     System.out.println("If achieved goal, enter 'achieved'. If not yet achieved, enter 'not yet achieved':");
                     String achieved = scanner.nextLine();
 
-
-                    Member.updateFitnessGoal(id,newGoal_value,newDeadline,achieved);
+                    Member.updateFitnessGoal(id,achieved);
                     break;
                 case "5":
                     System.out.println("Enter your weight:");
@@ -372,16 +374,70 @@ public class FitnessApp {
                     Member.makePayment(amount,id);
                     break;
                 case "9":
-                    System.out.println("Enter your category:");
-                    String exercise_category = scanner.nextLine();
-                    Member.searchUpExercise(exercise_category);
+                    System.out.println("Your Category Options:");
+                    System.out.println("1) CARDIO");
+                    System.out.println("2) STRENGTH");
+                    System.out.println("3) WATER-BASED");
+                    System.out.println("4) MINDBODY");
+                    System.out.print("Enter the number corresponding to your choice: ");
+
+                    String exerciseCategory = "";
+                    int choice = scanner.nextInt();
+                    scanner.nextLine(); // Consume newline character
+                    switch (choice) {
+                        case 1:
+                            exerciseCategory = "CARDIO";
+                            break;
+                        case 2:
+                            exerciseCategory = "STRENGTH";
+                            break;
+                        case 3:
+                            exerciseCategory = "WATER-BASED";
+                            break;
+                        case 4:
+                            exerciseCategory = "MINDBODY";
+                            break;
+                        default:
+                            System.out.println("Invalid choice. Please enter a number between 1 and 4.");
+                            return; // Exit method if choice is invalid
+                    }
+                    scanner.nextLine(); // Consume the newline character
+                    Member.searchUpExercise(exerciseCategory);
                     break;
                 case "10":
                     Member.displayHealthStatistics(id);
                     Member.displayFitnessAchievements(id);
-                    System.out.println("Enter your category:");
-                    String category = scanner.nextLine();
-                    Member.displayExerciseRoutines(id,category);
+                    System.out.println("Choose a category:");
+                    System.out.println("1) CARDIO");
+                    System.out.println("2) STRENGTH");
+                    System.out.println("3) WATER-BASED");
+                    System.out.println("4) MINDBODY");
+                    System.out.print("Enter the number corresponding to your choice: ");
+
+                    String category;
+                    int categoryChoice = scanner.nextInt();
+                    switch (categoryChoice) {
+                        case 1:
+                            category = "CARDIO";
+                            break;
+                        case 2:
+                            category = "STRENGTH";
+                            break;
+                        case 3:
+                            category = "WATER-BASED";
+                            break;
+                        case 4:
+                            category = "MINDBODY";
+                            break;
+                        default:
+                            System.out.println("Invalid choice. Please select a number between 1 and 4.");
+                            return; // Exit the method or handle the invalid input accordingly
+                    }
+                    scanner.nextLine(); // Consume the newline character
+                    Member.displayExerciseRoutines(id, category);
+                    break;
+                case "11":
+                    Member.requestSession(id);
                     break;
                 case "0":
                     return; // Exit the member function and return to the main menu
@@ -395,7 +451,7 @@ public class FitnessApp {
      * @param staffId represents the staff's ID
      */
     private static void staffInterface(int staffId) {
-        String query = "SELECT firstname, lastname FROM members WHERE staff_id = ?";
+        String query = "SELECT firstname, lastname FROM staff WHERE staff_id = ?";
 
         try {
             Connection connect = getConnection();
@@ -405,11 +461,19 @@ public class FitnessApp {
             ResultSet rs = ps.executeQuery();
 
             while(true) {
-                System.out.println("\nCurrent staff: " + rs.getString("firstname") + " " + rs.getString("lastname"));
+
+                String fn = null, ln = null;
+                while(rs.next()) {
+                    fn = rs.getString("firstname");
+                    ln = rs.getString("lastname");
+                }
+                System.out.println("\nCurrent staff: " + fn + " " + ln);
                 System.out.println("""
                     1) Maintenance status
                     2) Display requests
-                    3) Logout
+                    3) Display bill history
+                    4) Display finished sessions
+                    0) Logout
                     """);
 
                 Scanner scanner = new Scanner(System.in);
@@ -419,15 +483,22 @@ public class FitnessApp {
                     case "1":
                         Staff.CheckMaintenance(staffId);
                         break;
-                    case"2":
+                    case "2":
                         Staff.displaySessionRequests();
                         break;
-                    case"3": return;
+                    case "3":
+                        Staff.viewMemberBillHistory();
+                        break;
+                    case "4":
+                        Staff.handleFinishedSessions();
+                        break;
+                    case "0": return;
                     default: System.out.println("Invalid option, please try again.");
                 }
             }
         } catch (SQLException e) { e.printStackTrace(); }
     }
+
 
 
 }

@@ -1,9 +1,12 @@
+
 package org.example;
 
 import org.mindrot.jbcrypt.BCrypt;
 
 import java.sql.*;
+import java.time.*;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Scanner;
 
@@ -173,9 +176,9 @@ public class Staff {
         // Implement logic to add a bill to the member's account in the database
         try {
             Connection connect = FitnessApp.getConnection();
-            String query = "SELECT type FROM sessions WHERE member_id = ?";
+            String query = "SELECT type FROM sessions WHERE session_id = ?";
             PreparedStatement ps = connect.prepareStatement(query);
-            ps.setInt(1, memberId);
+            ps.setInt(1, sessionId);
             ResultSet rs = ps.executeQuery();
             while (rs.next()) {
                 String sessionTypeString = rs.getString("type");
@@ -226,33 +229,45 @@ public class Staff {
         }
     }
 
+    /**
+     * This method helps to view the members bill history
+     */
     public static void viewMemberBillHistory(){
         try {
             Connection connect = FitnessApp.getConnection();
 
             PreparedStatement ps = connect.prepareStatement("SELECT * FROM bills");
 
-            //ps.setInt(1, member_id);
             ResultSet rs = ps.executeQuery();
 
-            System.out.println("\n");
-            System.out.println("----------------------------------------------------------------");
-            while (rs.next()) {
-                int bill_id = rs.getInt("bill_id");
-                int member_id = rs.getInt("member_id");
-                double amount = rs.getDouble("amount");
-                String status = rs.getString("status");
-
-                System.out.println("Bill ID: "+ bill_id + ", Member ID: " +member_id + ", Amount: $" +amount + ", Status: "+ status);
+            if (!rs.isBeforeFirst()) {
+                System.out.println("Bill history is empty");
             }
-            System.out.println("----------------------------------------------------------------");
+            else {
+                System.out.println("\n");
+                System.out.println("----------------------------------------------------------------");
+                while (rs.next()) {
+                    int bill_id = rs.getInt("bill_id");
+                    int member_id = rs.getInt("member_id");
+                    double amount = rs.getDouble("amount");
+                    String status = rs.getString("status");
 
-
+                    System.out.println("Bill ID: "+ bill_id + ", Member ID: " +member_id + ", Amount: $" +amount + ", Status: "+ status);
+                }
+                System.out.println("----------------------------------------------------------------");
+            }
         } catch (SQLException e) {
             e.printStackTrace();
         }
 
     }
+
+    /**
+     * This method inserts a bill to a members account
+     * @param memberId id of the member
+     * @param amount the amount to be paid
+     * @return true if inserted false otherwise
+     */
     private static boolean insertAmountToBill(int memberId, double amount) {
         try {
             Connection connect = FitnessApp.getConnection();
@@ -278,6 +293,10 @@ public class Staff {
 
         return ratePerHour*hoursSpent;
     }
+
+    /**
+     * This method displays session requests made by members
+     */
     public static void displaySessionRequests() {
         String query = "SELECT s.session_id, s.room_id, s.trainer_id, s.date, s.starting_time, s.end_time, s.type, COUNT(sm.member_id) AS member_count " +
                 "FROM sessions s LEFT JOIN session_members sm ON s.session_id = sm.session_id " +
@@ -370,9 +389,92 @@ public class Staff {
         } catch (SQLException e) { e.printStackTrace(); }
     }
 
+    public static void handleFinishedSessions() {
+        LocalDate currentDate = LocalDate.now();
+        LocalTime currentTime = LocalTime.now();
+
+
+        String deleteQuery = "DELETE FROM sessions WHERE (date < ? OR (date = ? AND end_time < '" + currentTime + "')) AND status != 'staff_confirmed'";
+        String selectQuery = "SELECT * FROM sessions WHERE (date < ? OR (date = ? AND end_time < '" + currentTime + "')) AND status = 'staff_confirmed'";
+
+        try {
+            Connection connect = FitnessApp.getConnection();
+
+            PreparedStatement deletePs = connect.prepareStatement(deleteQuery);
+            PreparedStatement selectPs = connect.prepareStatement(selectQuery);
+
+            deletePs.setDate(1, Date.valueOf(currentDate));
+            deletePs.setDate(2, Date.valueOf(currentDate));
+            deletePs.executeUpdate();
+
+            selectPs.setDate(1, Date.valueOf(currentDate));
+            selectPs.setDate(2, Date.valueOf(currentDate));
+            ResultSet selectRs = selectPs.executeQuery();
+
+            List<Integer> sessionIds = new ArrayList<>();
+
+            System.out.println("----------------------------------------------------------------");
+            while (selectRs.next()) {
+                int sessionId = selectRs.getInt("session_id");
+                Date date = selectRs.getDate("date");
+                Time startingTime = selectRs.getTime("starting_time");
+                Time endTime = selectRs.getTime("end_time");
+
+                sessionIds.add(sessionId);
+                System.out.println("Session ID: " + sessionId + ", Date: " + date + ", Starting Time: " + startingTime + ", End Time: " + endTime);
+            }
+            System.out.println("----------------------------------------------------------------");
+
+            Scanner scanner = new Scanner(System.in);
+            System.out.println("Enter the session IDs you wish to terminate, separated by commas, or type 'ALL' to terminate all, invalid inputs will be skipped:");
+            String input = scanner.nextLine();
+
+            if ("ALL".equalsIgnoreCase(input)) {
+                for (int id : sessionIds) {
+                    terminateSession(id);
+                }
+            }
+            else {
+                List<String> deleteList = Arrays.asList(input.split("\\s*,\\s*"));
+
+                for (String idStr : deleteList) {
+                    int sessionId = Integer.parseInt(idStr);
+
+                    if (sessionIds.contains(sessionId)) {
+                        terminateSession(sessionId);
+                    }
+                }
+            }
+
+        } catch (SQLException e) { e.printStackTrace(); }
+    }
+
+    /**
+     * This method terminates sessions
+     * @param sessionId id of the session
+     */
+
+    private static void terminateSession(int sessionId) {
+        String memberQuery = "SELECT member_id FROM session_members WHERE session_id = ?";
+        String deleteQuery = "DELETE FROM sessions WHERE session_id = ?";
+
+        try {
+            Connection connect = FitnessApp.getConnection();
+            PreparedStatement memberPs = connect.prepareStatement(memberQuery);
+            PreparedStatement deletePs = connect.prepareStatement(deleteQuery);
+
+            memberPs.setInt(1, sessionId);
+            ResultSet memberRs = memberPs.executeQuery();
+
+            while (memberRs.next()) {
+                int memberId = memberRs.getInt("member_id");
+                addMemberBill(memberId, sessionId);
+            }
+
+            deletePs.setInt(1, sessionId);
+            deletePs.executeUpdate();
+
+        } catch (SQLException e) { e.printStackTrace(); }
+
+    }
 }
-
-
-
-
-

@@ -1,3 +1,4 @@
+
 package org.example;
 
 import java.sql.*;
@@ -153,7 +154,7 @@ public class Member {
 
 
                 System.out.println("Trainer ID: " + trainer_id + ", Day Available: " + dayOfWeek + ", Start Time: "+ startTime + ", End Time: " + endTime
-               );
+                );
             }
             // Close resources
             rs.close();
@@ -225,22 +226,25 @@ public class Member {
 
             PreparedStatement ps = connect.prepareStatement("SELECT * FROM bills WHERE member_id = ?");
 
-            //ps.setInt(1, member_id);
+            ps.setInt(1, member_id);
             ResultSet rs = ps.executeQuery();
 
-            System.out.println("\n");
-            System.out.println("----------------------------------------------------------------");
-            while (rs.next()) {
-                int bill_id = rs.getInt("bill_id");
-                int member_id = rs.getInt("member_id");
-                double amount = rs.getDouble("amount");
-                String status = rs.getString("status");
-
-                System.out.println("Bill ID: "+ bill_id + ", Member ID: " +member_id + ", Amount: $" +amount + ", Status: "+ status);
+            if(!rs.isBeforeFirst()) {
+                System.out.println("No bills");
             }
-            System.out.println("----------------------------------------------------------------");
+            else {
+                System.out.println("\n");
+                System.out.println("----------------------------------------------------------------");
+                while (rs.next()) {
+                    int bill_id = rs.getInt("bill_id");
+                    int member_id = rs.getInt("member_id");
+                    double amount = rs.getDouble("amount");
+                    String status = rs.getString("status");
 
-
+                    System.out.println("Bill ID: "+ bill_id + ", Member ID: " +member_id + ", Amount: $" +amount + ", Status: "+ status);
+                }
+                System.out.println("----------------------------------------------------------------");
+            }
         } catch (SQLException e) {
             e.printStackTrace();
         }
@@ -291,19 +295,17 @@ public class Member {
     /**
      * This function updates the members fitness goals
      * write date as yyyy-MM-dd
-     * @param goal_value
-     * @param deadline
-     * @param deadline
+     *
      */
-    public static void updateFitnessGoal(int member_id, String goal_value, String deadline, String status) {
+    public static void updateFitnessGoal(int member_id, String status) {
         try {
             Connection connection = FitnessApp.getConnection();
 
-            PreparedStatement statement = connection.prepareStatement("UPDATE goals SET goal_value = ?, deadline = ?, status = ? WHERE member_id = ?");
-            statement.setString(1, goal_value);
-            statement.setDate(2, parseDate(deadline));
-            statement.setString(3, status);
-            statement.setInt(4, member_id);
+            PreparedStatement statement = connection.prepareStatement("UPDATE goals SET  status = ? WHERE member_id = ?");
+            //statement.setString(1, goal_value);
+           // statement.setDate(2, parseDate(deadline));
+            statement.setString(1, status);
+            statement.setInt(2, member_id);
 
             int rowsUpdated = statement.executeUpdate();
             if (rowsUpdated > 0) {
@@ -484,12 +486,13 @@ public class Member {
 
             ResultSet rs = ps.executeQuery();
 
+            System.out.println("Exercise Routines");
             System.out.println("----------------------------------------------------------------");
             while (rs.next()) {
-               String  routineName = rs.getString("routine_name");
-               int durationMinutes = rs.getInt("duration_minutes");
-               int  intensityLevel = rs.getInt("intensity_level");
-               System.out.println("Routine Name: " + routineName + ", Duration (minutes): " + durationMinutes + ", Intensity Level: " + intensityLevel);
+                String  routineName = rs.getString("routine_name");
+                int durationMinutes = rs.getInt("duration_minutes");
+                int  intensityLevel = rs.getInt("intensity_level");
+                System.out.println("Routine Name: " + routineName + ", Duration (minutes): " + durationMinutes + ", Intensity Level: " + intensityLevel);
 
 
             }
@@ -499,37 +502,33 @@ public class Member {
         }
     }
 
-
-
-
-
     public static void displayFitnessAchievements(int memberId) {
 
-            String query = "SELECT * FROM goals WHERE member_id = ? AND status = 'achieved'";
-            try (Connection connection = FitnessApp.getConnection();
-                 PreparedStatement ps = connection.prepareStatement(query)) {
-                ps.setInt(1, member_id);
-                ResultSet rs = ps.executeQuery();
+        String query = "SELECT * FROM goals WHERE member_id = ? AND status = 'achieved'";
+        try (Connection connection = FitnessApp.getConnection();
+             PreparedStatement ps = connection.prepareStatement(query)) {
+            ps.setInt(1, member_id);
+            ResultSet rs = ps.executeQuery();
 
-                System.out.println("\n");
-                System.out.println("----------------------------------------------------------------");
-                while (rs.next()) {
-                    // Retrieve and display goal information
-                    int goalId = rs.getInt("goal_id");
-                    int member_id = rs.getInt("member_id");
-                    String goalType = rs.getString("goal_type");
-                    String goalValue = rs.getString("goal_value");
-                    String deadline = rs.getString("deadline");
-                    String status = rs.getString("status");
-                    // Display other goal attributes as needed
-                    System.out.println("Goal ID: " + goalId + " Member ID: " + member_id + ", Type: " + goalType + ", Value: " + goalValue + ", Deadline: " + deadline +
-                            ", Status: " + status);
-                }
-
-                System.out.println("----------------------------------------------------------------");
-            } catch (SQLException e) {
-                e.printStackTrace();
+            System.out.println("Achieved");
+            System.out.println("----------------------------------------------------------------");
+            while (rs.next()) {
+                // Retrieve and display goal information
+                int goalId = rs.getInt("goal_id");
+                int member_id = rs.getInt("member_id");
+                String goalType = rs.getString("goal_type");
+                String goalValue = rs.getString("goal_value");
+                String deadline = rs.getString("deadline");
+                String status = rs.getString("status");
+                // Display other goal attributes as needed
+                System.out.println("Goal ID: " + goalId + " Member ID: " + member_id + ", Type: " + goalType + ", Value: " + goalValue + ", Deadline: " + deadline +
+                        ", Status: " + status);
             }
+
+            System.out.println("----------------------------------------------------------------");
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
 
     }
 
@@ -540,7 +539,7 @@ public class Member {
             ps.setInt(1, member_id);
             ResultSet rs = ps.executeQuery();
 
-            System.out.println("\n");
+            System.out.println("Health statistics");
             System.out.println("----------------------------------------------------------------");
             while (rs.next()) {
                 double weight = rs.getDouble("weight");
@@ -777,7 +776,7 @@ public class Member {
                             validPeriod = true;
                         }
                         else {
-                            System.out.println("The selected period conflicts with an existing schedule, please try again.");
+                            System.out.println("The selected period conflicts with  existing schedule, please try again.");
                         }
                     }
 
@@ -865,15 +864,12 @@ public class Member {
                 //Get trainer
                 int trainer;
                 List<Integer> trainers = new ArrayList<>();
-                System.out.println(category);
-                System.out.println(dayOfWeek);
+
                 String trainerQuery = "SELECT DISTINCT t.trainer_id, t.firstname, t.lastname FROM trainers t " +
                         "JOIN trainerSchedule ts ON t.trainer_id = ts.trainer_id " +
                         "WHERE t.speciality = '" + category + "' AND ts.dayOfWeek = '" + dayOfWeek + "' ";
-                System.out.println(trainerQuery);
+
                 PreparedStatement trainerPs = connect.prepareStatement(trainerQuery);
-                //trainerPs.setString(1,"'" + category + "'");
-                //trainerPs.setString(2, "'" + dayOfWeek + "'");
                 ResultSet trainerRs = trainerPs.executeQuery();
                 if(!trainerRs.isBeforeFirst()) {
                     System.out.println("Sorry, no available trainers at this time.");
@@ -1008,7 +1004,7 @@ public class Member {
         } catch (SQLException e) { e.printStackTrace(); }
     }
     private static boolean checkTimeConflict(int trainerId, String dayOfWeek, Time startTime, Time endTime) {
-        String query = "SELECT COUNT(*) FROM trainerSchedule WHERE trainer_id = ? AND dayOfWeek = '" + dayOfWeek + "' AND (end_time <= '" + startTime + "' OR starting_time >= '" + endTime + "')";
+        String query = "SELECT 1 FROM trainerSchedule WHERE trainer_id = ? AND dayOfWeek = '" + dayOfWeek + "' AND(starting_time <= '" + startTime + "' AND end_time >= '" + endTime + "')";
         try {
             Connection connect = FitnessApp.getConnection();
             PreparedStatement ps = connect.prepareStatement(query);
@@ -1016,16 +1012,10 @@ public class Member {
             ps.setInt(1, trainerId);
             ResultSet rs = ps.executeQuery();
 
-            if (rs.next()) {
-                return rs.getInt("count") > 0; }
+            return !rs.isBeforeFirst();
 
         } catch (SQLException e) { e.printStackTrace(); }
 
         return false;
     }
 }
-
-
-
-
-
