@@ -11,7 +11,7 @@ Database Setup:
 
 Java Configuration:
 1. Java JDK 17 or newer
-2. Edit the username, password, and port number fields in the FitnessApp(Line 31-33) class to match your PostgreSQL database credentials, or change them after running the Fitness App class.
+2. Edit the username, password, and port number fields in the FitnessApp(Line 31-33) class to match your PostgreSQL database credentials, or change them after running the FitnessApp class.
 Ensure correct parameters (e.g., username 'postgres', port number) are used for database communication.
 
 Running
