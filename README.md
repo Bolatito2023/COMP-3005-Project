@@ -36,3 +36,5 @@ TESTING AND USAGE
 After setup, run the Java application to access the Health and Fitness Club system.
 Use various functionalities to simulate real-world scenarios and test system behavior.
 Monitor database interactions for data accuracy and system integrity.
+
+LINK TO VIDEO DEMONSTRATION: https://vimeo.com/933512928?share=copy
